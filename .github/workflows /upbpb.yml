@@ -1,4 +1,4 @@
-name: Fetch, Obfuscate and Commit bupie
+name: Fetch and Commit _worker.js
 
 on:
   push:
@@ -13,55 +13,25 @@ permissions:
   contents: write
 
 jobs:
-  fetch-and-obfuscate:
+  fetch-and-commit:
     runs-on: ubuntu-latest
 
     steps:
       - name: Check out code
         uses: actions/checkout@v4
 
-      - name: Set up Node.js environment
-        uses: actions/setup-node@v4
-        with:
-          node-version: "latest"
-
-      - name: Install dependencies
-        run: |
-          npm install -g javascript-obfuscator
-
       - name: Download _worker.js
         run: |
           # Download _worker.js from the specified URL
-          curl -L -o origin.js https://raw.githubusercontent.com/cmliu/epeius/main/_worker.js
+          curl -L -o _worker.js https://raw.githubusercontent.com/cmliu/epeius/main/_worker.js
           
           # Verify file was downloaded successfully
-          if [ ! -f "origin.js" ]; then
-            echo "origin.js not found after download"
+          if [ ! -f "_worker.js" ]; then
+            echo "_worker.js not found after download"
             exit 1
           fi
           
           echo "Downloaded _worker.js successfully"
-          ls -la origin.js
-
-      - name: Obfuscate _worker.js
-        run: |
-          javascript-obfuscator origin.js --output _worker.js \
-            --compact true \
-            --control-flow-flattening false \
-            --dead-code-injection false \
-            --identifier-names-generator mangled \
-            --rename-globals false \
-            --string-array true \
-            --string-array-encoding 'rc4' \
-            --string-array-threshold 0.75 \
-            --transform-object-keys true \
-            --unicode-escape-sequence true
-          
-          # Move obfuscated file to final destination
-          cat _worker.js >> temp.js
-          mv temp.js _worker.js
-          
-          echo "Obfuscation completed"
           ls -la _worker.js
 
       - name: Commit changes
