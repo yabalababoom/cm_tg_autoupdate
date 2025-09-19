@@ -1,0 +1,43 @@
+name: Fetch and Commit _worker.js
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:  # Allows manual triggering
+  schedule:
+    # Runs daily at 1:00 AM
+    - cron: "0 1 * * *"
+
+permissions:
+  contents: write
+
+jobs:
+  fetch-and-commit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Download _worker.js
+        run: |
+          # Download _worker.js from the specified URL
+          curl -L -o _worker.js https://raw.githubusercontent.com/cmliu/epeius/main/_worker.js
+          
+          # Verify file was downloaded successfully
+          if [ ! -f "_worker.js" ]; then
+            echo "_worker.js not found after download"
+            exit 1
+          fi
+          
+          echo "Downloaded _worker.js successfully"
+          ls -la _worker.js
+
+      - name: Commit changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          branch: main
+          commit_message: "Update _worker.js from cmliu/epeius"
+          commit_author: "github-actions[bot] <github-actions[bot]@users.noreply.github.com>"
+          file_pattern: "_worker.js"
